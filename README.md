@@ -12,6 +12,14 @@
     - DB_HOST='хост'
     - DB_PORT='порт'
 - Сделать миграции: python manage.py migrate
+- Шаги для создания бд локально (через sql shell (postgres)):
+    - Создание бд: CREATE DATABASE bd_name;
+    - Создание роли пользователя: CREATE ROLE name with password 'password';
+    - Выдача возможности входа: ALTER ROLE "name" WITH LOGIN;
+    - Выдача прав на использование бд (здесь выдача всех прав): GRANT ALL PRIVILEGES ON DATABASE "bd_name" to name;
+    - Подключение к бд \c bd_name
+    - Выдача прав на публичную схему: CRANT ALL ON schema public TO name;
+- Либо использование хостинга с бд. 
 6. Запуск проекта: python manage.py runserver. Доступ будет по http://127.0.0.1:8000/
 
 # Скриншоты интерфейса.
@@ -26,4 +34,4 @@
 ![Страница управления словарем](screenshots/dictionary.png)
 
 ## Редактирование позиции словаря
-![Редактирование позиции словаря](screenshots/update_note.png)
+![Редактирование позиции словаря](screenshots/update_position.png)
