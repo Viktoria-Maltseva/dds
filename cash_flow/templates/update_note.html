@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Note</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Редактировать запись</h1>
+        <form method="post" class="bg-white p-4 rounded shadow-sm">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group mb-3">
+                {{field.label_tag}}
+                {{ field }}
+                {% if field.errors %}
+                <div class="text-danger">
+                    {% for error in field.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-secondary btn-lg btn-block">Сохранить</button>
+        </form>
+
+    </div>
+    <select id="id_operation" name="operation">
+        {% for operation in operations %}
+            <option value="{{ operation.id }}" {% if operation.id == form.operation.id %}selected{% endif %}>{{ operation.name }}</option>
+        {% endfor %}
+    </select>
+    
+    <select id="id_category" name="category">
+        {% for category in categories %}
+            <option value="{{ category.id }}" {% if category.id == form.category.id %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    
+    <select id="id_subcategory" name="subcategory">
+        {% for subcategory in subcategories %}
+            <option value="{{ subcategory.id }}" {% if subcategory.id == form.subcategory.id %}selected{% endif %}>{{ subcategory.name }}</option>
+        {% endfor %}
+    </select>
+    
+
+    <script>
+        $(document).ready(function() {
+            const loadCategoriesUrl = "{% url 'load_categories' %}";
+            const loadSubcategoriesUrl = "{% url 'load_subcategories' %}";
+    
+            const initialCategoryId = "{{ form.category.id }}";
+            const initialSubcategoryId = "{{ form.subcategory.id }}";
+            const initialOperationId = "{{ form.operation.id }}";
+    
+            function populateSelect(selectElement, data) {
+                selectElement.empty();
+                selectElement.append('<option value="">---------</option>');
+                $.each(data, function(index, item) {
+                    selectElement.append('<option value="' + item.id + '">' + item.name + '</option>');
+                });
+            }
+    
+            $("#id_operation").change(function() {
+                const operationId = $(this).val();
+                const categorySelect = $("#id_category");
+                const subcategorySelect = $("#id_subcategory");
+    
+                populateSelect(categorySelect, []);
+                populateSelect(subcategorySelect, []);
+    
+                if (operationId) {
+                    $.ajax({
+                        url: loadCategoriesUrl,
+                        data: { operation_id: operationId },
+                        dataType: 'json',
+                        success: function(data) {
+                            populateSelect(categorySelect, data);
+                        }
+                    });
+                }
+            });
+    
+            $("#id_category").change(function() {
+                const categoryId = $(this).val();
+                const subcategorySelect = $("#id_subcategory");
+    
+                populateSelect(subcategorySelect, []);
+    
+                if (categoryId) {
+                    $.ajax({
+                        url: loadSubcategoriesUrl,
+                        data: { category_id: categoryId },
+                        dataType: 'json',
+                        success: function(data) {
+                            populateSelect(subcategorySelect, data);
+                        }
+                    });
+                }
+            });
+            if (initialOperationId) {
+                $('#id_operation').val(initialOperationId).trigger('change');
+            }
+            if (initialCategoryId) {
+                $('#id_category').val(initialCategoryId).trigger('change');
+            }
+            if (initialSubcategoryId) {
+                $('#id_subcategory').val(initialSubcategoryId);
+            }
+        });
+    </script>
+</body>
+</html>

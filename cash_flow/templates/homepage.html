@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Homepage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Записи о движении денежных средств</h1>
+    <div class="mb-3">
+        <a href="{% url 'note_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"> Добавить запись</i>
+        </a>
+    </div>
+    <div class="mb-3">
+        <a href="{% url 'manage_dictionary' %}" class="btn btn-info">
+            <i class="bi bi-gear"> Управление словарем</i>
+        </a>
+    </div>
+    <form method="get" action="{% url 'main_page' %}">
+        <div class="form-row">
+            <div class="col">
+                <select name="status" class="form-control">
+                    <option value="">Статус</option>
+                    {% for status in statuses %}
+                        <option value="{{ status.id }}" {% if status.id == request.GET.status %}selected{% endif %}>{{ status.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <select name="category" class="form-control">
+                    <option value="">Категория</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id == request.GET.category %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <select name="subcategory" class="form-control">
+                    <option value="">Подкатегория</option>
+                    {% for subcategory in subcategories %}
+                        <option value="{{ subcategory.id }}" {% if subcategory.id == request.GET.subcategory %}selected{% endif %}>{{ subcategory.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+            </div>
+            <div class="col">
+                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary">Фильтровать</button>
+            </div>
+        </div>
+    </form>
+
+    <form method="get" action="{% url 'main_page' %}">
+        <button type="submit" class="btn btn-secondary mt-3">Снять фильтры</button>
+    </form>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Дата</th>
+                <th scope="col">Статус</th>
+                <th scope="col">Тип операции</th>
+                <th scope="col">Категория</th>
+                <th scope="col">Подкатегория</th>
+                <th scope="col">Сумма</th>
+                <th scope="col">Комментарий</th>
+                <th scope="col">Редактирование/удаление</th>
+            </tr>
+        </thead>
+        {% for i in records %}
+        <tr>
+            <td>{{ i.date|date:"d.m.Y" }}</td>
+            <td>{{ i.status }}</td>
+            <td>{{ i.operation }}</td>
+            <td>{{ i.category }}</td>
+            <td>{{ i.subcategory }}</td>
+            <td>{{ i.summ }}</td>
+            <td>{{ i.comment }}</td>
+            <td>
+                <form method="post" action="{% url 'set_note_id' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="note_id" value="{{ i.id }}">
+                    <input type="hidden" name="action" value="update">
+                    <button type="submit" class="btn btn-outline-dark">Редактировать запись</button>
+                </form>
+
+                <form method="post" action="{% url 'note_delete' i.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-dark">Удалить запись</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>    
+</html>

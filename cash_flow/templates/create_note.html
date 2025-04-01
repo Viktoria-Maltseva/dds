@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Note</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="bg-light">
+
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Создать запись</h1>
+
+        <form method="post" class="bg-white p-4 rounded shadow-sm">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group mb-3">
+                {{field.label_tag}}
+                {{ field }}
+                {% if field.errors %}
+                <div class="text-danger">
+                    {% for error in field.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-secondary btn-lg btn-block">Сохранить</button>
+        </form>
+    </div>
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            const loadCategoriesUrl = "{% url 'load_categories' %}"; // URL для загрузки категорий
+            const loadSubcategoriesUrl = "{% url 'load_subcategories' %}"; // URL для загрузки подкатегорий
+
+            // Функция для заполнения выпадающих списков данными
+            function populateSelect(selectElement, data) {
+                // Очищаем текущие данные в селекте
+                selectElement.empty();
+                // Добавляем пустой элемент в селект
+                selectElement.append('<option value="">---------</option>');
+                // Для каждого элемента в данных добавляем новый option
+                $.each(data, function(index, item) {
+                    selectElement.append('<option value="' + item.id + '">' + item.name + '</option>');
+                });
+            }
+
+             // Обработчик изменения поля "Тип операции"
+            $("#id_operation").change(function() {
+                const operationId = $(this).val();
+                const categorySelect = $("#id_category");
+                const subcategorySelect = $("#id_subcategory");
+
+                // Очищаем текущие значения в селектах категории и подкатегории
+                populateSelect(categorySelect, []);  
+                populateSelect(subcategorySelect, []);
+
+                if (operationId) {
+                    $.ajax({
+                        url: loadCategoriesUrl,
+                        data: { operation_id: operationId },
+                        dataType: 'json',
+                        success: function(data) {
+                            // Заполняем селектор категорий полученными данными
+                            populateSelect(categorySelect, data);
+                        }
+                    });
+                }
+            });
+
+            // Обработчик изменения поля "Категория"
+            $("#id_category").change(function() {
+                const categoryId = $(this).val();
+                const subcategorySelect = $("#id_subcategory");
+
+                // Очищаем текущие значения в селекте подкатегории
+                populateSelect(subcategorySelect, []);
+
+                if (categoryId) {
+                    $.ajax({
+                        url: loadSubcategoriesUrl,
+                        data: { category_id: categoryId }, // Параметр запроса - выбранная категория
+                        dataType: 'json',
+                        success: function(data) {
+                            populateSelect(subcategorySelect, data);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
